@@ -1,6 +1,7 @@
 package benchmark.model;
 
 import java.util.*;
+import benchmark.vocabulary.BSBM;
 
 public class Product extends BSBMResource{
 	private int nr;
@@ -75,7 +76,7 @@ public class Product extends BSBMResource{
 	{
 		StringBuffer s = new StringBuffer();
 		s.append("<");
-		s.append(Producer.getProducerNS(producerNr));
+		s.append(BSBM.INST_NS);
 		s.append("Product");
 		s.append(productNr);
 		s.append(">");
@@ -84,7 +85,7 @@ public class Product extends BSBMResource{
 	
 	public static String getPrefixed(int productNr, int producerNr) {
 		StringBuffer s = new StringBuffer();
-		s.append(Producer.getProducerNSprefixed(producerNr));
+		s.append(BSBM.INST_PREFIX);
 		s.append("Product");
 		s.append(productNr);
 		return s.toString();
