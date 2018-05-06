@@ -14,5 +14,5 @@ WHERE {
     ?offer bsbm:validTo ?date .
     FILTER (?date > %currentDate% )
 }
-ORDER BY xsd:double(str(?price))
+ORDER BY ?price
 LIMIT 10
