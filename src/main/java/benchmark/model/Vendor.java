@@ -79,17 +79,13 @@ public class Vendor extends BSBMResource {
 	{
 		StringBuffer s = new StringBuffer();
 		s.append(BSBM.INST_NS);
-		s.append("dataFromVendor");
-		s.append(vendorNr);
-		s.append("/");
 		return s.toString();
 	}
 	
 	public static String getVendorNSprefixed(int vendorNr)
 	{
 		StringBuffer s = new StringBuffer();
-		s.append("dataFromVendor");
-		s.append(vendorNr);
+		s.append(BSBM.INST_PREFIX);
 		s.append(":");
 		return s.toString();
 	}
