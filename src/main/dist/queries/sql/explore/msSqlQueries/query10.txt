@@ -1,4 +1,4 @@
-SELECT TOP 10 distinct o.nr, o.price
+SELECT DISTINCT TOP 10 o.nr, o.price
 FROM offer o, vendor v
 WHERE o.product=@ProductXYZ@ 
 	AND o.deliveryDays<=3 AND v.country='US'

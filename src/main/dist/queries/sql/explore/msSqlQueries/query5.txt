@@ -1,4 +1,4 @@
-SELECT TOP 5distinct p.nr, p.label
+SELECT DISTINCT TOP 5 p.nr, p.label
 FROM product p, product po,
     (Select distinct pfp1.product FROM productfeatureproduct pfp1, (SELECT productFeature FROM productfeatureproduct WHERE product=@ProductXYZ@) pfp2 WHERE pfp2.productFeature=pfp1.productFeature) pfp
 	WHERE p.nr=pfp.product AND po.nr=@ProductXYZ@ AND p.nr!=po.nr
