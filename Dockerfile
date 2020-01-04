@@ -1,6 +1,5 @@
-# Alpine Linux with OpenJDK JRE
-FROM openjdk:8-jre-alpine
+FROM openjdk:8-alpine
 RUN apk add --no-cache bash
 WORKDIR /bsbm
 COPY . .
-RUN bash ./gradlew
+RUN bash ./gradlew installDist
