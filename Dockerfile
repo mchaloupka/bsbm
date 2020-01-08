@@ -3,7 +3,6 @@ RUN apk add bash
 WORKDIR /bsbm
 COPY . .
 RUN bash ./gradlew installDist
-WORKDIR /bsbm/build/install/bsbm
 
 FROM openjdk:8-jre-alpine
 RUN apk add bash --no-cache
