@@ -26,6 +26,8 @@ public class SQLSerializer implements Serializer {
 	private SQLTables tables;
 	private String database;
 	private static final int insertNumber = 200;//Number of insert tuples per insert operation
+	private HashSet<Integer> producerIds;
+	private HashSet<Integer> productIds;
 	
 	public SQLSerializer(String directory, boolean forwardChaining, String database) {
 		outputDir = new File(directory);
@@ -36,6 +38,9 @@ public class SQLSerializer implements Serializer {
 		this.database = database;
 		
 		initTables();
+
+		producerIds = new HashSet<Integer>();
+		productIds = new HashSet<Integer>();
 	}
 	
 	public void gatherData(ObjectBundle bundle) {
@@ -201,6 +206,12 @@ public class SQLSerializer implements Serializer {
 	 */
 	private void convertProduct(Product product)throws IOException
 	{
+		if(productIds.contains(product.getNr())) {
+			return;
+		}
+
+		productIds.add(product.getNr());
+		
 		StringBuffer values = getBuffer(tables.productInsertCounter++, "product");
 		
 		values.append("(");
@@ -367,6 +378,12 @@ public class SQLSerializer implements Serializer {
 	 */
 	private void convertProducer(Producer producer) throws IOException
 	{
+		if(producerIds.contains(producer.getNr())) {
+			return;
+		}
+
+		producerIds.add(producer.getNr());
+
 		StringBuffer values = getBuffer(tables.producerInsertCounter++, "producer");
 		values.append("(");
 	
