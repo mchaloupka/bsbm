@@ -9,9 +9,6 @@ public class ObjectBundle {
 	private String publisher;
 	private long publishDate;
 	private Vector<BSBMResource> objects;
-	private Serializer serializer;
-	private int maxSize;
-	private int size;
 	private boolean finish;
 	
 	public boolean isFinish() {
@@ -22,35 +19,15 @@ public class ObjectBundle {
 		this.finish = finish;
 	}
 
-	public ObjectBundle(Serializer serializer)
+	public ObjectBundle()
 	{
 		objects = new Vector<BSBMResource>();
-		maxSize = 0;
-		size = 0;
-		this.serializer = serializer;
-		finish = false;
-	}
-	
-	public ObjectBundle(Serializer serializer, int maxsize)
-	{
-		objects = new Vector<BSBMResource>(maxsize);
-		maxSize = maxsize;
-		size = 0;
-		this.serializer = serializer;
 		finish = false;
 	}
 	
 	public void add(BSBMResource res)
 	{
 		objects.add(res);
-		
-		//Only if maxSize is set, automatic commit active
-		if(maxSize>0)
-		{
-			size++;
-			if(size==maxSize)
-				commitToSerializer();
-		}
 	}
 	
 	public int size()
@@ -62,13 +39,11 @@ public class ObjectBundle {
 		return graphName;
 	}
 	
-	public boolean commitToSerializer()
+	public boolean commitToSerializer(Serializer serializer)
 	{
 		//Only do this if Serializer is set
 		if(serializer!=null) {
 			serializer.gatherData(this);
-			size=0;
-			objects = new Vector<BSBMResource>(maxSize);
 			return true;
 		}else
 			return false;
@@ -108,7 +83,7 @@ public class ObjectBundle {
 		this.publisherNum = publisherNum;
 	}
 	
-	public boolean writeStringToSerializer(String s) {
+	public boolean writeStringToSerializer(Serializer serializer, String s) {
 		if(serializer instanceof NTriples) {
 			((NTriples)serializer).writeString(s);
 			return true;

@@ -34,7 +34,8 @@ public class Generator {
 	private static boolean forwardChaining = false;
 	private static String outputDirectory = "td_data";
 	private static String outputFileName = "dataset";
-	private static String serializerType = "nt"; 
+	private static String defaultSerializerType = "nt";
+	private static List<String> serializerTypes = new ArrayList<String>(); 
 	private static int nrOfOutputFiles = 1;
 	
 	//Update dataset parameters. Output type is always N-Triple.
@@ -83,7 +84,7 @@ public class Generator {
 	public static ArrayList<Integer> ratingsiteOfReview;//saves review-ratingSite relationship
 	private static HashMap<String,Integer> wordList;//Word list for the Test driver
 	
-	private static Serializer serializer;
+	private static List<Serializer> serializers;
 	
 	private static File outputDir;
 
@@ -112,10 +113,20 @@ public class Generator {
 		ratingsiteOfReview = new ArrayList<Integer>();
 		ratingsiteOfReview.add(0);
 		
-		serializer = getSerializer(serializerType);
-		if(serializer==null) {
-			System.err.println("Invalid Serializer chosen.");
-			System.exit(-1);
+		serializers = new ArrayList<Serializer>();
+		if(serializerTypes.isEmpty()) {
+			serializers.add(getSerializer(defaultSerializerType, 0));
+		}
+		else {
+			int index = 0;
+			for(String serializerType: serializerTypes) {
+				Serializer serializer = getSerializer(serializerType, index++);
+				if(serializer == null) {
+					System.err.println("Invalid Serializer chosen.");
+					System.exit(-1);
+				}
+				serializers.add(serializer);
+			}
 		}
 
 		namedGraph = isNamedGraphSerializer();
@@ -132,32 +143,43 @@ public class Generator {
 	}
 	
 	private static boolean isNamedGraphSerializer() {
-		if(serializer instanceof TriG)
-			return true;
-		else
+		if(serializers.size() == 1) {
+			return serializers.get(0) instanceof TriG;
+		}
+		else {
+			for(Serializer serializer : serializers) {
+				if(serializer instanceof TriG) {
+					System.err.println("Cannot combine trig serializer with others.");
+					System.exit(-1);
+				}
+			}
+
 			return false;
+		}
 	}
 	
-	private static Serializer getSerializer(String type) {
+	private static Serializer getSerializer(String type, int index) {
+		String indexedFileName = index > 0 ? String.format("%s-%d", outputFileName, index) : outputFileName;
+
 		String t = type.toLowerCase();
 		if(t.equals("nt"))
-			return new NTriples( outputFileName, ".nt", forwardChaining, nrOfOutputFiles);
+			return new NTriples(indexedFileName, ".nt", forwardChaining, nrOfOutputFiles);
 		else if(t.equals("trig"))
-			return new TriG(outputFileName + ".trig", forwardChaining);
+			return new TriG(indexedFileName + ".trig", forwardChaining);
 		else if(t.equals("nqr"))
-      return new NQuadByResource(outputFileName, ".nq", forwardChaining);
-    else if(t.equals("nqp"))
-      return new NQuadContextProduct(outputFileName, ".nq", forwardChaining);
-    else if(t.equals("ttl"))
-			return new Turtle(outputFileName, forwardChaining, nrOfOutputFiles);
+			return new NQuadByResource(indexedFileName, ".nq", forwardChaining);
+		else if(t.equals("nqp"))
+			return new NQuadContextProduct(indexedFileName, ".nq", forwardChaining);
+		else if(t.equals("ttl"))
+			return new Turtle(indexedFileName, forwardChaining, nrOfOutputFiles);
 		else if(t.equals("xml"))
-			return new XMLSerializer(outputFileName + ".xml", forwardChaining);
+			return new XMLSerializer(indexedFileName + ".xml", forwardChaining);
 		else if(t.equals("sql"))
-			return new SQLSerializer(outputFileName, forwardChaining, "benchmark");
+			return new SQLSerializer(indexedFileName, forwardChaining, "benchmark");
 		else if(t.equals("virt"))
-			return new VirtSerializer(outputFileName, forwardChaining);
+			return new VirtSerializer(indexedFileName, forwardChaining);
 		else if(t.equals("monetdb"))
-			return new MonetDBSerializer(outputFileName, forwardChaining, "benchmark");
+			return new MonetDBSerializer(indexedFileName, forwardChaining, "benchmark");
 		else
 			return null;
 	}
@@ -284,7 +306,7 @@ public class Generator {
 		DateGenerator publishDateGen = new DateGenerator(new GregorianCalendar(2000,05,20),new GregorianCalendar(2000,06,23),seeds[0]);
 		ValueGenerator valueGen = new ValueGenerator(seeds[1]);
 		
-		ObjectBundle bundle = new ObjectBundle(serializer);
+		ObjectBundle bundle = new ObjectBundle();
 		
 		//Calculate branch factors for inner nodes
 		int[] branchFt;
@@ -361,9 +383,15 @@ public class Generator {
 		}
 		if(nr!=maxProductTypeNrPerLevel.get(maxProductTypeNrPerLevel.size()-1))
 			maxProductTypeNrPerLevel.add(nr);
-		bundle.commitToSerializer();
+		commitToSerializers(bundle);
 		System.out.println("Product Type Hierarchy of depth " + branchFt.length + " with " + nr + " Product Types generated.\n");
 		productTypeCount = nr;
+	}
+
+	private static void commitToSerializers(ObjectBundle bundle) {
+		for(Serializer serializer: serializers) {
+			bundle.commitToSerializer(serializer);
+		}
 	}
 	
 	public static Long[] generateSeedsProductFeature() {
@@ -380,7 +408,7 @@ public class Generator {
 	public static void createProductFeatures(Long[] seeds)
 	{
 		System.out.println("Generating Product Features...");
-		ObjectBundle bundle = new ObjectBundle(serializer);
+		ObjectBundle bundle = new ObjectBundle();
 		ValueGenerator valueGen = new ValueGenerator(seeds[0]);
 		DateGenerator publishDateGen = new DateGenerator(new GregorianCalendar(2000,05,20),new GregorianCalendar(2000,06,23),seeds[1]);
 		
@@ -487,7 +515,7 @@ public class Generator {
 			}
 			pt.setFeatures(features);
 		}
-		bundle.commitToSerializer();
+		commitToSerializers(bundle);
 		System.out.println((productFeatureNr-1) + " Product Features generated.\n");
 	}
 
@@ -530,7 +558,7 @@ public class Generator {
 		RandomBucket countryGen = createCountryGenerator(seeds[2]);
 		Random productSeedGen = new Random(seeds[4]);
 		
-		ObjectBundle bundle = new ObjectBundle(serializer);
+		ObjectBundle bundle = new ObjectBundle();
 		
 		int productNr = 1;
 		int producerNr = 1;
@@ -569,7 +597,7 @@ public class Generator {
 			createProductsOfProducer(bundle, producerNr, productNr, hasNrProducts, productSeedGen);
 			
 			//All data for current producer generated -> commit (Important for NG-Model).
-			bundle.commitToSerializer();
+			commitToSerializers(bundle);
 			
 			productNr += hasNrProducts;
 			producerNr++;
@@ -788,7 +816,7 @@ public class Generator {
 		RandomBucket countryGen = createCountryGenerator(seeds[2]);
 		Random offerSeedGen = new Random(seeds[4]);
 		
-		ObjectBundle bundle = new ObjectBundle(serializer);
+		ObjectBundle bundle = new ObjectBundle();
 		
 		Integer offerNr = 1;
 		Integer vendorNr = 1;
@@ -829,7 +857,7 @@ public class Generator {
 			createOffersOfVendor(bundle, vendorNr, offerNr, offerCountVendor, valueGen, offerSeedGen);
 			
 			//All data for current producer generated -> commit (Important for NG-Model).
-			bundle.commitToSerializer();
+			commitToSerializers(bundle);
 			
 			offerNr += offerCountVendor;
 			vendorNr++;
@@ -944,7 +972,7 @@ public class Generator {
 		Integer personNr = 1;
 		Integer ratingSiteNr = 1;
 		
-		ObjectBundle bundle = new ObjectBundle(serializer);
+		ObjectBundle bundle = new ObjectBundle();
 		
 		while(reviewNr<=reviewCount)
 		{
@@ -999,7 +1027,7 @@ public class Generator {
 			}
 			
 			//All data for current producer generated -> commit (Important for NG-Model).
-			bundle.commitToSerializer();
+			commitToSerializers(bundle);
 			
 			ratingSiteNr++;
 		}
@@ -1053,14 +1081,14 @@ public class Generator {
 	
 	protected static void createUpdateDataset() {
 		int productsInTransaction = 0;
-		ObjectBundle bundle = new ObjectBundle(updateDatasetSerializer);
+		ObjectBundle bundle = new ObjectBundle();
 		for(List<BSBMResource> productData: updateResourceData) {
 			for(BSBMResource res: productData)
 				bundle.add(res);
-			bundle.commitToSerializer();
+			bundle.commitToSerializer(updateDatasetSerializer);
 			productsInTransaction = (productsInTransaction + 1) % nrOfProductsPerTransaction; 
 			if(productsInTransaction==0)
-				bundle.writeStringToSerializer(updateDatasetTransactionSeparator);
+				bundle.writeStringToSerializer(updateDatasetSerializer, updateDatasetTransactionSeparator);
 		}
 		updateDatasetSerializer.serialize();
 	}
@@ -1073,7 +1101,7 @@ public class Generator {
 		while(i<args.length) {
 			try {
 				if(args[i].equals("-s")) {
-					serializerType = args[i++ + 1];
+					serializerTypes.add(args[i++ + 1]);
 				}
 				else if(args[i].equals("-pc")) {
 					productCount = Integer.parseInt(args[i++ + 1]);
@@ -1178,13 +1206,18 @@ public class Generator {
 		createVendorData(vendorSeeds);
 		createRatingSiteData(rtSeeds);
 		
-		serializer.serialize();
+		for(Serializer serializer: serializers) {
+			serializer.serialize();
+		}
+		
 		writeTestDriverData();
 		
 		if(generateUpdateDataset)
 			createUpdateDataset();
 		
-		System.out.println(serializer.triplesGenerated() + " triples generated.");
+		for(Serializer serializer: serializers) {
+			System.out.println(serializer.triplesGenerated() + " triples generated.");
+		}
 		
 		if(generateUpdateDataset)
 			System.out.println(updateDatasetSerializer.triplesGenerated() + " triples generated for update dataset.");
