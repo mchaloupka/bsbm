@@ -308,7 +308,7 @@ public class Generator {
 		DateGenerator publishDateGen = new DateGenerator(new GregorianCalendar(2000,05,20),new GregorianCalendar(2000,06,23),seeds[0]);
 		ValueGenerator valueGen = new ValueGenerator(seeds[1]);
 		
-		ObjectBundle bundle = new ObjectBundle();
+		ObjectBundle bundle = new ObjectBundle(serializers);
 		
 		//Calculate branch factors for inner nodes
 		int[] branchFt;
@@ -385,15 +385,11 @@ public class Generator {
 		}
 		if(nr!=maxProductTypeNrPerLevel.get(maxProductTypeNrPerLevel.size()-1))
 			maxProductTypeNrPerLevel.add(nr);
-		commitToSerializers(bundle);
+		
+		bundle.commitToSerializers();
+
 		System.out.println("Product Type Hierarchy of depth " + branchFt.length + " with " + nr + " Product Types generated.\n");
 		productTypeCount = nr;
-	}
-
-	private static void commitToSerializers(ObjectBundle bundle) {
-		for(Serializer serializer: serializers) {
-			bundle.commitToSerializer(serializer);
-		}
 	}
 	
 	public static Long[] generateSeedsProductFeature() {
@@ -410,7 +406,7 @@ public class Generator {
 	public static void createProductFeatures(Long[] seeds)
 	{
 		System.out.println("Generating Product Features...");
-		ObjectBundle bundle = new ObjectBundle();
+		ObjectBundle bundle = new ObjectBundle(serializers);
 		ValueGenerator valueGen = new ValueGenerator(seeds[0]);
 		DateGenerator publishDateGen = new DateGenerator(new GregorianCalendar(2000,05,20),new GregorianCalendar(2000,06,23),seeds[1]);
 		
@@ -517,7 +513,9 @@ public class Generator {
 			}
 			pt.setFeatures(features);
 		}
-		commitToSerializers(bundle);
+		
+		bundle.commitToSerializers();
+
 		System.out.println((productFeatureNr-1) + " Product Features generated.\n");
 	}
 
@@ -560,7 +558,7 @@ public class Generator {
 		RandomBucket countryGen = createCountryGenerator(seeds[2]);
 		Random productSeedGen = new Random(seeds[4]);
 		
-		ObjectBundle bundle = new ObjectBundle();
+		ObjectBundle bundle = new ObjectBundle(serializers);
 		
 		int productNr = 1;
 		int producerNr = 1;
@@ -599,7 +597,7 @@ public class Generator {
 			createProductsOfProducer(bundle, producerNr, productNr, hasNrProducts, productSeedGen);
 			
 			//All data for current producer generated -> commit (Important for NG-Model).
-			commitToSerializers(bundle);
+			bundle.commitToSerializers();
 			
 			productNr += hasNrProducts;
 			producerNr++;
@@ -818,7 +816,7 @@ public class Generator {
 		RandomBucket countryGen = createCountryGenerator(seeds[2]);
 		Random offerSeedGen = new Random(seeds[4]);
 		
-		ObjectBundle bundle = new ObjectBundle();
+		ObjectBundle bundle = new ObjectBundle(serializers);
 		
 		Integer offerNr = 1;
 		Integer vendorNr = 1;
@@ -859,7 +857,7 @@ public class Generator {
 			createOffersOfVendor(bundle, vendorNr, offerNr, offerCountVendor, valueGen, offerSeedGen);
 			
 			//All data for current producer generated -> commit (Important for NG-Model).
-			commitToSerializers(bundle);
+			bundle.commitToSerializers();
 			
 			offerNr += offerCountVendor;
 			vendorNr++;
@@ -974,7 +972,7 @@ public class Generator {
 		Integer personNr = 1;
 		Integer ratingSiteNr = 1;
 		
-		ObjectBundle bundle = new ObjectBundle();
+		ObjectBundle bundle = new ObjectBundle(serializers);
 		
 		while(reviewNr<=reviewCount)
 		{
@@ -1029,7 +1027,7 @@ public class Generator {
 			}
 			
 			//All data for current producer generated -> commit (Important for NG-Model).
-			commitToSerializers(bundle);
+			bundle.commitToSerializers();
 			
 			ratingSiteNr++;
 		}
@@ -1083,14 +1081,14 @@ public class Generator {
 	
 	protected static void createUpdateDataset() {
 		int productsInTransaction = 0;
-		ObjectBundle bundle = new ObjectBundle();
+		ObjectBundle bundle = new ObjectBundle(Collections.singletonList(updateDatasetSerializer));
 		for(List<BSBMResource> productData: updateResourceData) {
 			for(BSBMResource res: productData)
 				bundle.add(res);
-			bundle.commitToSerializer(updateDatasetSerializer);
+			bundle.commitToSerializers();
 			productsInTransaction = (productsInTransaction + 1) % nrOfProductsPerTransaction; 
 			if(productsInTransaction==0)
-				bundle.writeStringToSerializer(updateDatasetSerializer, updateDatasetTransactionSeparator);
+				bundle.writeStringToSerializers(updateDatasetTransactionSeparator);
 		}
 		updateDatasetSerializer.serialize();
 	}

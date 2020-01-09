@@ -4,6 +4,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
+import java.util.HashSet;
 import java.io.File;
 
 import benchmark.generator.DateGenerator;

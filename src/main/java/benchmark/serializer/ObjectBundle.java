@@ -10,6 +10,9 @@ public class ObjectBundle {
 	private long publishDate;
 	private Vector<BSBMResource> objects;
 	private boolean finish;
+	private List<Serializer> serializers;
+	
+	private static final int MAX_OBJECTS = 10000;
 	
 	public boolean isFinish() {
 		return finish;
@@ -19,15 +22,20 @@ public class ObjectBundle {
 		this.finish = finish;
 	}
 
-	public ObjectBundle()
+	public ObjectBundle(List<Serializer> serializers)
 	{
 		objects = new Vector<BSBMResource>();
 		finish = false;
+		this.serializers = serializers;
 	}
 	
 	public void add(BSBMResource res)
 	{
 		objects.add(res);
+
+		if(objects.size() >= MAX_OBJECTS) {
+			this.commitToSerializers();
+		}
 	}
 	
 	public int size()
@@ -39,14 +47,14 @@ public class ObjectBundle {
 		return graphName;
 	}
 	
-	public boolean commitToSerializer(Serializer serializer)
+	public void commitToSerializers()
 	{
 		//Only do this if Serializer is set
-		if(serializer!=null) {
+		for(Serializer serializer: this.serializers) {
 			serializer.gatherData(this);
-			return true;
-		}else
-			return false;
+		}
+
+		this.objects.clear();
 	}
 
 	public void setGraphName(String namedGraph) {
@@ -83,12 +91,11 @@ public class ObjectBundle {
 		this.publisherNum = publisherNum;
 	}
 	
-	public boolean writeStringToSerializer(Serializer serializer, String s) {
-		if(serializer instanceof NTriples) {
-			((NTriples)serializer).writeString(s);
-			return true;
+	public void writeStringToSerializers(String s) {
+		for(Serializer serializer: this.serializers) {
+			if(serializer instanceof NTriples) {
+				((NTriples)serializer).writeString(s);
+			}
 		}
-		else
-			return false;
 	}
 }
