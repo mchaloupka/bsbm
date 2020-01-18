@@ -794,8 +794,8 @@ public class MSSQLSerializer implements Serializer {
 						"  [producer] int,\n" +
 						"  [vendor] int,\n" +
 						"  [price] float default NULL,\n" +
-						"  [validFrom] datetime default NULL,\n" +
-						"  [validTo] datetime default NULL,\n" +
+						"  [validFrom] datetime2 default NULL,\n" +
+						"  [validTo] datetime2 default NULL,\n" +
 						"  [deliveryDays] int default NULL,\n" +
 						"  [offerWebpage] nvarchar(100) default NULL,\n" +
 						"  [publisher] int,\n" +
@@ -820,7 +820,7 @@ public class MSSQLSerializer implements Serializer {
 						"  [product] int,\n" +
 						"  [producer] int,\n" +
 						"  [person] int,\n" +
-						"  [reviewDate] datetime default NULL,\n" +
+						"  [reviewDate] datetime2 default NULL,\n" +
 						"  [title] nvarchar(200) default NULL,\n" +
 						"  [text] text,\n" +
 						"  [language] char(2) default NULL,\n" +
