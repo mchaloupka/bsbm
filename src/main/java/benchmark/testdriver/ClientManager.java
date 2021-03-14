@@ -40,12 +40,13 @@ public class ClientManager {
 				System.out.println("Creating Mongo connectionn for client");
 			  	sConn = new MongoDbConnection(parent.sparqlEndpoint, parent.dbName);
 			}else {
-				if(parent.sparqlUpdateEndpoint==null)
+				if(parent.sparqlUpdateEndpoint==null) {
 					System.out.println("Creating SPARQL update connectionn for client");
 					sConn = new SPARQLConnection(parent.sparqlEndpoint, parent.defaultGraph, parent.timeout);
-				else
+				} else {
 					System.out.println("Creating SPARQL connectionn for client");
 					sConn = new SPARQLConnection(parent.sparqlEndpoint, parent.sparqlUpdateEndpoint, parent.defaultGraph, parent.timeout);
+				}
 			}
 				
 			clients[i] = new ClientThread(pool, sConn, ignoreQueries.length, this, i+1,parent.userpasspool);
