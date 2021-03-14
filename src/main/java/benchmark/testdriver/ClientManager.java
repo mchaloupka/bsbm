@@ -34,13 +34,17 @@ public class ClientManager {
 		for(int i=0;i<nrThreads;i++) {
 			ServerConnection sConn;
 			if(parent.doSQL){
+				System.out.println("Creating SQL connection for client");
 				sConn = new SQLConnection(parent.sparqlEndpoint, parent.timeout, parent.driverClassName);
 			}if(parent.doMongo){
-			  sConn = new MongoDbConnection(parent.sparqlEndpoint, parent.dbName);
+				System.out.println("Creating Mongo connectionn for client");
+			  	sConn = new MongoDbConnection(parent.sparqlEndpoint, parent.dbName);
 			}else {
 				if(parent.sparqlUpdateEndpoint==null)
+					System.out.println("Creating SPARQL update connectionn for client");
 					sConn = new SPARQLConnection(parent.sparqlEndpoint, parent.defaultGraph, parent.timeout);
 				else
+					System.out.println("Creating SPARQL connectionn for client");
 					sConn = new SPARQLConnection(parent.sparqlEndpoint, parent.sparqlUpdateEndpoint, parent.defaultGraph, parent.timeout);
 			}
 				
