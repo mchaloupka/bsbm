@@ -79,6 +79,7 @@ public class TestDriver {
 	protected String driverClassName = TestDriverDefaultValues.driverClassName;
 	protected boolean qualification = TestDriverDefaultValues.qualification;
 	protected String qualificationFile = TestDriverDefaultValues.qualificationFile;
+	protected boolean shouldPrintConfig = false;
 
 	/*
 	 * Parameters for steady state
@@ -108,6 +109,11 @@ public class TestDriver {
 
 	public TestDriver(String[] args) {
 		processProgramParameters(args);
+
+		if (shouldPrintConfig) {
+			this.printConfig();
+		}
+
 		System.out.print("Reading Test Driver data...");
 		System.out.flush();
 		if (doSQL || doMongo)
@@ -288,9 +294,9 @@ public class TestDriver {
 		queryRun = setupQueryRun(maxQueryPerRun, queryRuns);
 
 		queryMix = new QueryMix(queries, queryRun);
-		if(userpasspool!=null){
-	    queryMix.userpass = userpasspool.getNextUserpass();
 
+		if(userpasspool!=null){
+	    	queryMix.userpass = userpasspool.getNextUserpass();
 		}
 	}
 
@@ -765,13 +771,12 @@ public class TestDriver {
 				} else if (args[i].equals("-sql")) {
 					doSQL = true;
 				} else if (args[i].equals("-mongodb")) {
-          doMongo = true;
-        } else if (args[i].equals("-dbname")) {
-          dbName = args[i++ + 1];
-        } else if (args[i].equals("-mt")) {
+          			doMongo = true;
+				} else if (args[i].equals("-dbname")) {
+          			dbName = args[i++ + 1];
+        		} else if (args[i].equals("-mt")) {
 					if (rampup)
-						throw new Exception(
-								"Incompatible options: -mt and -rampup");
+						throw new Exception("Incompatible options: -mt and -rampup");
 					multithreading = true;
 					nrThreads = Integer.parseInt(args[i++ + 1]);
 				} else if (args[i].equals("-seed")) {
@@ -787,8 +792,7 @@ public class TestDriver {
 					nrRuns = 15;
 				} else if (args[i].equals("-rampup")) {
 					if (multithreading)
-						throw new Exception(
-								"Incompatible options: -mt and -rampup");
+						throw new Exception("Incompatible options: -mt and -rampup");
 					rampup = true;
 				} else if (args[i].equals("-u")) {
 					sparqlUpdateEndpoint = args[i++ + 1];
@@ -800,8 +804,10 @@ public class TestDriver {
 					sparqlUpdateQueryParameter = args[i++ + 1];
 				} else if (!args[i].startsWith("-")) {
 					sparqlEndpoint = args[i];
-				} else if(args[i].equals("-upf")){
-				  userpasspool = new UserPassPool(new File(args[i++ + 1]));
+				} else if(args[i].equals("-upf")) {
+				  	userpasspool = new UserPassPool(new File(args[i++ + 1]));
+				} else if(args[i].equals("-printconfig")) {
+					shouldPrintConfig = true;
 				} else {
 					if (!args[i].equals("-help"))
 						System.err.println("Unknown parameter: " + args[i]);
@@ -818,6 +824,28 @@ public class TestDriver {
 				System.exit(-1);
 			}
 		}
+	}
+
+	private void printConfig() {
+		System.out.println("Query mix runs: " + nrRuns);
+		System.out.println("Data input directory: " + resourceDir);
+		System.out.println("Use case file: " + usecaseFile);
+		System.out.println("Warm up runs: " + warmups);
+		System.out.println("Benchmark results output file: " + xmlResultFile);
+		System.out.println("Default graph: " + defaultGraph);
+		System.out.println("Use SQL: " + doSQL);
+		System.out.println("Multithreading: " + multithreading);
+		System.out.println("Multithreading client count: " + nrThreads);
+		System.out.println("Seed: " + seed);
+		System.out.println("Timeout: " + timeout);
+		System.out.println("DB driver class name: " + driverClassName);
+		System.out.println("Sparql Update Service Endpoint: " + sparqlUpdateEndpoint);
+		System.out.println("Update dataset file name: " + updateFile);
+		System.out.println("Qualification mode: " + qualification);
+		System.out.println("Qualification file: " + qualificationFile);
+		System.out.println("Rampup: " + rampup);
+		System.out.println("Update query parameter: " + sparqlUpdateQueryParameter);
+		System.out.println("Endpoint: " + sparqlEndpoint);
 	}
 
 	/*
