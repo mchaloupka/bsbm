@@ -41,6 +41,24 @@ public class SQLConnection implements ServerConnection {
 	public void executeQuery(Query query, byte queryType) {
 		executeQuery(query.getQueryString(), queryType, query.getNr(), query.getQueryMix());
 	}
+
+	private void createFullResultString(StringBuffer resultString, ResultSet results) throws SQLException {
+		for(int i = 1; i <= results.getMetaData().getColumnCount(); i++){
+			String colLabel = results.getMetaData().getColumnLabel(i);
+			
+			String value  = results.getString(i);
+			value = value != null 
+				? value.substring(0, Math.min(20, results.getString(i).length()))
+				: null;
+			
+			resultString.append(colLabel);
+			resultString.append(": ");
+			resultString.append(value);
+			resultString.append(" **");			
+		  }
+
+		  resultString.append("\n");
+	}
 	
 	/*
 	 * execute Query with Query String
@@ -56,21 +74,8 @@ public class SQLConnection implements ServerConnection {
 			StringBuffer resultString = new StringBuffer(); 
 			while(results.next()){
 				resultCount++;
-				if(logger.isEnabledFor(Level.ALL)){
-				  
-				  for(int i = 1; results.getMetaData().getColumnCount()>=i;i++){
-				    String colLabel = results.getMetaData().getColumnLabel(i);
-				    
-				    String value  = results.getString(i);
-				    value = value !=null?value.substring(0, Math.min(20, results.getString(i).length())):null;
-				    
-				    resultString.append(colLabel);
-				    resultString.append(": ");
-				    resultString.append(value);
-				    resultString.append(" **");
-				    
-				  }
-				  resultString.append("\n");
+				if(logger.isEnabledFor(Level.ALL)) {
+					createFullResultString(resultString, results);
 				}
 			}
 			Long stop = System.nanoTime();
@@ -113,23 +118,13 @@ public class SQLConnection implements ServerConnection {
 	
 			int resultCount = 0;
 			StringBuffer resultString = new StringBuffer(); 
-      while(results.next()){
-        resultCount++;
-        if(logger.isEnabledFor(Level.ALL)){
-          
-          for(int i = 0; results.getMetaData().getColumnCount()>i;i++){
-            String colLabel = results.getMetaData().getColumnLabel(i);
-            String value  = results.getString(i);
-            value = value !=null?value.substring(0, Math.min(20, results.getString(i).length())):null;
-                      resultString.append(colLabel);
-            resultString.append(": ");
-            resultString.append(value);
-            resultString.append(" **");
-            
-          }
-          resultString.append("\n");
-        }
-      }
+
+			while(results.next()){
+				resultCount++;
+				if(logger.isEnabledFor(Level.ALL)) {
+					createFullResultString(resultString, results);
+				}
+			}
 			
 			Long stop = System.nanoTime();
 			Long interval = stop-start;
